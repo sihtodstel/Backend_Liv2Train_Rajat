@@ -1,0 +1,58 @@
+class StockListAPI(MethodView):
+
+    @to_json(200)
+    def post(self, version):
+        try:
+            req_payload = request.get_json()
+            current_app.logger.info(
+                f'foreign stocks bulk details request, {req_payload}'
+            )
+            page = req_payload.get('page', 1)
+            limit = req_payload.get('limit', 10)
+            kwargs = {
+                'pagination': {
+                    'from': page,
+                    'to': limit
+                },
+                'filters': {
+                    'source.keyword': SourceTypes['DW'],
+                }
+            }
+            fields = req_payload.get('fields')
+            if version == 'v1':
+                # filter through company_code for v1
+                if req_payload.get('company_codes'):
+                    kwargs['filters']['company_code.keyword'] = ','.join(req_payload.get('company_codes'))
+                return StockService.foreign_stocks(fields, **kwargs)
+            else:
+                # filter through symbol for v2
+                if req_payload.get('ticker_symbols'):
+                    kwargs['filters']['nse_symbol.keyword'] = ','.join(req_payload.get('ticker_symbols'))
+                return StockService.foreign_stocks_by_symbol(fields, **kwargs)
+        except Exception as ex:
+            current_app.logger.error(
+                f'Error occured in foreign stocks bulk details, {ex}',
+                exc_info=True
+            )
+            raise BadRequest('Something went wrong', 400)
+
+
+            service ---
+
+            @classmethod
+    def foreign_stocks(cls, fields_inclusion=[], **kwargs):
+        query = ElasticService.build_query(**kwargs)
+        query_result = ElasticService.search(
+            index_name=StockIndexES,
+            query=query
+        )
+        response = {}
+        if query_result['matched_documents']:
+            fields_inclusion = cls._get_mapped_fields(fields_inclusion)
+            response = [cls._format(row, fields_inclusion) for row in query_result['matched_documents']]
+            response = {value['company_code']: value for key, value in enumerate(response)}
+        else:
+            current_app.logger.info(
+                f'No result found for foreign stocks bulk details, {kwargs}'
+            )
+        return response

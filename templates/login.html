@@ -1,0 +1,27 @@
+
+{% block title %}Login Page{% endblock %}
+
+{% block content %}
+<form action="#" method="post">
+	<p>Name:</p>
+	<p><input type="text" name="nm" maxlength="40"/></p>
+	<p>Center Code</p>
+	<p><input type="text" name="code" class="field" required pattern="[a-zA-Z0-9]+" /></p>
+	<p>Student Capacity</p>
+	<p><input type="number" name="capacity"/> </p>
+	<p>Courses Offered</p>
+	<p><select id="course" name="crs" size="3">
+  <option value="first">first</option>
+  <option value="second">Second</option>
+  <option value="third">Third</option>
+  <option value="fourth">Fourth</option>
+</select></p>
+	<p>Created On</p>
+	<p><input type="date"  ></p>
+	<p>Contact Email</p>
+	<p><input type="email"/></p>
+	<p>Contact Phone</p>
+	<p><input type="number"/></p>
+	<p><input type="submit" value="submit"/></p>
+</form>
+{% endblock %}
