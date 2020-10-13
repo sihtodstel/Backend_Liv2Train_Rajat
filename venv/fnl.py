@@ -26,13 +26,16 @@ def addOne():
 
 @app.route('/data',methods=['POST'])
 def add():
-    model={'cname':request.json['cname']}
-    datamodel.append(model)
-    return jsonify({'datamodel': datamodel})
+	if request.method == 'POST':
+		posted_data = request.get_json()
+		data = posted_data['data']
+		return jsonify(str("Successfully stored  " + str(data)))
 
-@app.route('/data', methods=['GET'])
+@app.route('/getdata', methods=['GET'])
 def returnData():
-    return jsonify({'datamodel': datamodel})
+	posted_data = request.get_json()
+	name = posted_data['name']
+	return jsonify(" JSON Of fields " + name + "!!!")
 
 if __name__ == '__main__':
 	app.run(debug=True, port=8080) #run app on port 8080 in debug mode
